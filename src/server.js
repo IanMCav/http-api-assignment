@@ -1,54 +1,59 @@
 const http = require('http');
 const url = require('url');
-const query = require('querystring');
+// const query = require('querystring');
 const htmlHandler = require('./htmlResponses.js');
 const jsonHandler = require('./jsonResponses.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
-/* const urlStruct = {
-  '/': htmlHandler.getIndex,
-  '/success': jsonHandler.success,
-  '/badRequest': jsonHandler.badRequest,
-  notFound: jsonHandler.notFound,
-}; */
-
-const handlePost = (request, response, parsedUrl) => {
-  if (parsedUrl.pathname === '/addUser') {
-    const res = response;
-    const body = [];
-    request.on('error', (err) => {
-      console.dir(err);
-      res.statusCode = 400;
-      res.end();
-    });
-    request.on('data', (chunk) => {
-      body.push(chunk);
-    });
-    request.on('end', () => {
-      const bodyString = Buffer.concat(body).toString();
-      const bodyParams = query.parse(bodyString);
-      jsonHandler.addUser(request, res, bodyParams);
-    });
-  }
-};
-
-const handleGet = (request, response, parsedUrl) => {
-  if (parsedUrl.pathname === '/style.css') {
-    htmlHandler.getCSS(request, response);
-  } else if (parsedUrl.pathname === '/getUsers') {
-    jsonHandler.getUsers(request, response);
-  } else {
-    htmlHandler.getIndex(request, response);
-  }
-};
-
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url);
-  if (request.method === 'POST') {
-    handlePost(request, response, parsedUrl);
-  } else {
-    handleGet(request, response, parsedUrl);
+
+
+  // the ?valid stuff is in parsedUrl.query, o
+  switch (parsedUrl.pathname) {
+    case '/style.css':
+      htmlHandler.getCSS(request, response);
+      break;
+
+    case '/client.html':
+      htmlHandler.getIndex(request, response);
+      break;
+
+    case '/favicon.ico':
+      break;
+          
+      case '/':
+          htmlHandler.getIndex(request, response);
+          break;
+
+    case '/success':
+      jsonHandler.success(request, response);
+      break;
+
+    case '/badRequest':
+      jsonHandler.badRequest(request, response, parsedUrl.query);
+      break;
+
+    case '/unauthorized':
+      jsonHandler.unauthorized(request, response, parsedUrl.query);
+      break;
+
+    case '/forbidden':
+      jsonHandler.forbidden(request, response);
+      break;
+
+    case '/internal':
+      jsonHandler.internal(request, response);
+      break;
+
+    case '/notImplemented':
+      jsonHandler.notImplemented(request, response);
+      break;
+
+    default:
+      jsonHandler.phorohphor(request, response);
+      break;
   }
 };
 

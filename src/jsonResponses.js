@@ -1,11 +1,3 @@
-// Note this object is purely in memory
-// When node shuts down this will be cleared.
-// Same when your heroku app shuts down from inactivity
-// We will be working with databases in the next few weeks.
-const users = {};
-
-// function to respond with a json object
-// takes request, response, status code and object to send
 const respondJSON = (request, response, status, object) => {
   response.writeHead(status, {
     'Content-Type': 'application/json',
@@ -14,73 +6,12 @@ const respondJSON = (request, response, status, object) => {
   response.end();
 };
 
-// function to respond without json body
-// takes request, response and status code
-const respondJSONMeta = (request, response, status) => {
+/* const respondJSONMeta = (request, response, status) => {
   response.writeHead(status, {
     'Content-Type': 'application/json',
   });
   response.end();
-};
-
-// return user object as JSON
-const getUsers = (request, response) => {
-  const responseJSON = {
-    users,
-  };
-
-  respondJSON(request, response, 200, responseJSON);
-};
-
-// function to add a user from a POST body
-const addUser = (request, response, body) => {
-  // default json message
-  const responseJSON = {
-    message: 'Name and age are both required.',
-  };
-
-    // check to make sure we have both fields
-    // We might want more validation than just checking if they exist
-    // This could easily be abused with invalid types (such as booleans, numbers, etc)
-    // If either are missing, send back an error message as a 400 badRequest
-  if (!body.name || !body.age) {
-    responseJSON.id = 'missingParams';
-    return respondJSON(request, response, 400, responseJSON);
-  }
-
-  // default status code to 201 created
-  let responseCode = 201;
-
-  // if that user's name already exists in our object
-  // then switch to a 204 updated status
-  if (users[body.name]) {
-    responseCode = 204;
-  } else {
-    // otherwise create an object with that name
-    users[body.name] = {};
-  }
-
-  // add or update fields for this user name
-  users[body.name].name = body.name;
-  users[body.name].age = body.age;
-
-  // if response is created, then set our created message
-  // and sent response with a message
-  if (responseCode === 201) {
-    responseJSON.message = 'Created Successfully';
-    return respondJSON(request, response, responseCode, responseJSON);
-  }
-  // 204 has an empty payload, just a success
-  // It cannot have a body, so we just send a 204 without a message
-  // 204 will not alter the browser in any way!!!
-  return respondJSONMeta(request, response, responseCode);
-};
-
-// public exports
-module.exports = {
-  getUsers,
-  addUser,
-};
+}; */
 
 const success = (request, response) => {
   const responseJSON = {
@@ -91,22 +22,66 @@ const success = (request, response) => {
 };
 
 const badRequest = (request, response, params) => {
-  const responseJSON = {
-    message: 'This request has the required parameters',
-  };
-  respondJSON(request, response, params, 403, responseJSON);
+  let responseJSON = 0;
+  let errCode = 0;
+
+  if (params === 'valid=true') {
+    responseJSON = { message: 'This request has the required parameters' };
+    errCode = 200;
+  } else {
+    responseJSON = { message: 'Missing valid query parameter set to true', id: 'badRequest' };
+    errCode = 400;
+  }
+
+  respondJSON(request, response, errCode, responseJSON);
 };
 
-const notFound = (request, response) => {
-  const responseJSON = {
-    message: 'The page you are looking for was not found.',
-    id: 'notFound',
-  };
-  respondJSON(request, response, 401, responseJSON);
+const unauthorized = (request, response, params) => {
+  let responseJSON = 0;
+  let errCode = 0;
+
+  if (params === 'loggedIn=yes') {
+    responseJSON = { message: 'You have successfully viewed the content' };
+    errCode = 200;
+  } else {
+    responseJSON = { message: 'Missing loggedIn query paramater set to yes', id: 'unaouthorized' };
+    errCode = 401;
+  }
+
+  respondJSON(request, response, errCode, responseJSON);
 };
+
+const forbidden = (request, response) => {
+  const responseJSON = { message: 'You do not have access to this content', id: 'forbidden' };
+
+  respondJSON(request, response, 403, responseJSON);
+};
+
+const internal = (request, response) => {
+  const responseJSON = { message: 'Internal Server Error. Something went wrong.', id: 'internalError' };
+
+  respondJSON(request, response, 500, responseJSON);
+};
+
+const notImplemented = (request, response) => {
+  const responseJSON = { message: 'A get request for this page has not been implemented yet. Check again later for updated content.', id: 'notImplemented' };
+
+  respondJSON(request, response, 501, responseJSON);
+};
+
+const phorohphor = (request, response) => {
+  const responseJSON = { message: 'the page you are looking for was not found.', id: 'notFound' };
+
+  respondJSON(request, response, 404, responseJSON);
+};
+
 
 module.exports = {
   success,
   badRequest,
-  notFound,
+  unauthorized,
+  forbidden,
+  internal,
+  notImplemented,
+  phorohphor,
 };

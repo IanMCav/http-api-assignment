@@ -6,13 +6,6 @@ const respondJSON = (request, response, status, object) => {
   response.end();
 };
 
-/* const respondJSONMeta = (request, response, status) => {
-  response.writeHead(status, {
-    'Content-Type': 'application/json',
-  });
-  response.end();
-}; */
-
 const success = (request, response) => {
   const responseJSON = {
     message: 'This is a successful response',
@@ -44,7 +37,7 @@ const unauthorized = (request, response, params) => {
     responseJSON = { message: 'You have successfully viewed the content' };
     errCode = 200;
   } else {
-    responseJSON = { message: 'Missing loggedIn query paramater set to yes', id: 'unaouthorized' };
+    responseJSON = { message: 'Missing loggedIn query paramater set to yes', id: 'unauthorized' };
     errCode = 401;
   }
 
